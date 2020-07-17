@@ -1,7 +1,7 @@
 Appendix A:
 Marching Cube Algorithm
 
-In programming, firstly, a MR image is input and converted into digital binary matrixes using “os”
+In programming, first, a MR image is input and converted into digital binary matrixes using “os”
 and “Nibabel” module. The Library and Cube Index are set up to achieve the database exchange.
 The Cube Index then matches the data that are extracted from the library to find the edge
 intersection. “Data_path” is a complete file path. Then the data is read through Nibabel module
