@@ -1,0 +1,456 @@
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+from IPython.core.display import display, HTML
+display(HTML("<style>.container { width:100% !important; }</style>"))
+import numpy as np
+
+l = .5
+x = np.zeros((12,3,3))
+x[0][0] = [l,0,0]
+x[0][1] = [0,0,0]
+x[0][2] = [0,l,0]
+
+x[1][0] = [l,0,0]
+x[1][1] = [0,l,0]
+x[1][2] = [l,l,0]
+
+x[2][0] = [l,0,0]
+x[2][1] = [l,0,l]
+x[2][2] = [l,l,l]
+
+x[3][0] = [l,0,0]
+x[3][1] = [l,l,l]
+x[3][2] = [l,l,0]
+
+x[4][0] = [0,l,0]
+x[4][1] = [l,l,0]
+x[4][2] = [l,l,l]
+
+x[5][0] = [0,l,0]
+x[5][1] = [l,l,l]
+x[5][2] = [0,l,l]
+
+
+
+x[6][0] = [0,0,0]
+x[6][1] = [l,0,0]
+x[6][2] = [l,0,l]
+
+x[7][0] = [0,0,0]
+x[7][1] = [l,0,l]
+x[7][2] = [0,0,l]
+
+
+x[8][0] = [0,0,0]
+x[8][1] = [0,0,l]
+x[8][2] = [0,l,l]
+
+
+x[9][0] = [0,0,0]
+x[9][1] = [0,l,l]
+x[9][2] = [0,l,0]
+
+
+x[10][0] = [0,l,l]
+x[10][1] = [0,0,l]
+x[10][2] = [l,0,l]
+
+
+x[11][0] = [0,l,l]
+x[11][1] = [l,0,l]
+x[11][2] = [l,l,l]
+
+def normalize(x):
+    l = np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
+    if l != 0:
+        t = x / float(l)
+    else:
+        t = x
+    return t
+
+def normal_returner(x):
+    return normalize(np.cross(x[0] - x[2],x[1]-x[2]))
+
+def draw_triangle():
+    global x
+    global division
+#     global nnn
+#     global zoom
+    
+    glBegin(GL_TRIANGLES)
+    for i in division:
+        norm = normal_returner(i)
+        glNormal3f(norm[0], norm[1], norm[2])
+        glVertex3f( i[0][0],i[0][1],i[0][2])
+        glVertex3f( i[1][0],  i[1][1], i[1][2])
+        glVertex3f( i[2][0],  i[2][1], i[2][2])
+
+    glEnd()
+    
+def test1():
+    glClear(GL_COLOR_BUFFER_BIT)
+    glPushMatrix()
+    glColor3f(0.4, 0.4, 0.4)
+    draw_triangle()
+
+    glPopMatrix()
+    glFlush()
+
+    
+    
+def keyPressed(key, x, y):
+    global tt
+    global division
+#     glLoadIdentity()
+#     glClear(GL_COLOR_BUFFER_BIT)
+    if key == 'q':
+        glRotatef(5,1.0 , 0.0 , 0.0)
+    if key == 'w':
+        glRotatef(-5,1.0 , 0.0 , 0.0)
+    if key == 'a':
+        glRotatef(5,0.0 , 1.0 , 0.0)
+    if key == 's':
+        glRotatef(-5,0.0 , 1.0 , 0.0)
+    if key == 'z':
+        glRotatef(5,0.0 , 0.0 , 1.0)
+    if key == 'x':
+        glRotatef(-5,0.0 , 0.0 , 1.0)
+    if key == 'o':
+        for j in range(1):
+            mesh_buffer = []
+            for i in range(len(tt)):
+                mesh_buffer.extend(subdiviosn(i))
+            e = np.array(mesh_buffer)
+            tt = e
+        division = e
+    glutPostRedisplay()
+    
+def init():
+    light0_diffuse = (0.0, 0.25, 0.25, 0)
+    light0_position = (0, 0, 1.0, 1)
+
+    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glShadeModel(GL_SMOOTH)
+    glLightfv(GL_LIGHT0, GL_POSITION, light0_position)
+    #glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse)
+ 
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    #glColorMaterial(GL_FRONT, GL_DIFFUSE)
+    glEnable(GL_COLOR_MATERIAL)    
+    glEnable(GL_NORMALIZE)
+
+    
+    
+    
+    
+    
+tt = np.array(x,dtype=np.float32)
+def neibor(mesh_number):
+    global tt
+    t_0_neighbors = []
+    if mesh_number>1000 :
+        start = mesh_number - 1000
+    else:
+        start = 0
+    if mesh_number > 20500:
+        end = 21975
+    else:
+        end = 1000 + mesh_number
+    for i in range(0,len(tt)):
+        if i == mesh_number :
+            continue
+        flag = 1
+        for j in range(3):
+            for k in range(3):
+                if (tt[i][k] == tt[mesh_number][j]).all():
+                   # print("yes")
+                    flag += 1
+            if flag%3 == 0:
+                t_0_neighbors.append(i)
+                flag = 1
+    try:
+        return [t_0_neighbors[0],t_0_neighbors[1],t_0_neighbors[2]]
+    except:
+        try: return [t_0_neighbors[0],t_0_neighbors[1]]
+        except:
+            return [t_0_neighbors[0]]
+
+
+# t_100_odd_vertices = []
+# neib_100 = neibor(100)
+def far_vert(v1,v2,tri_neib):
+    global tt
+    if (tt[tri_neib][0] == v1).all() and (tt[tri_neib][1] == v2).all():
+        return tt[tri_neib][2]
+    elif (tt[tri_neib][1] == v1).all() and (tt[tri_neib][2] == v2).all():
+        return tt[tri_neib][0]
+    elif (tt[tri_neib][0] == v1 ).all() and (tt[tri_neib][2] == v2).all():
+        return tt[tri_neib][1]
+    
+    elif (tt[tri_neib][0] == v2).all() and (tt[tri_neib][1] == v1).all():
+        return tt[tri_neib][2]
+    elif (tt[tri_neib][1] == v2).all() and (tt[tri_neib][2] == v1).all():
+        return tt[tri_neib][0]
+    elif (tt[tri_neib][0] == v2 ).all() and (tt[tri_neib][2] == v1).all():
+        return tt[tri_neib][1]
+    else:
+        pass
+    
+def vert_neibor(mesh_number,vert):
+    global tt
+    vert_neibor = []
+    if mesh_number>1000 :
+        start = mesh_number - 1000
+    else:
+        start = 0
+    if mesh_number > 20500:
+        end = 21975
+    else:
+        end = 1000 + mesh_number
+    for i in range(0,len(tt)):
+        for j in range(3):
+            if (tt[mesh_number][vert] == tt[i][j]).all():
+                vert_list = [0,1,2]
+                vert_list.remove(j)
+                for k in vert_list:
+                    if i != mesh_number or k != vert:
+                        vert_neibor.append(tt[i][k])
+                    
+    items = vert_neibor
+    from collections import OrderedDict
+    vert_neibor = OrderedDict((tuple(x), x) for x in items).values()
+    
+    x = np.array(vert_neibor)
+    t = [0,0,0]
+    for i in range(len(x)):
+        t[0] = t[0] + x[i][0]
+        t[1] = t[1] + x[i][1]
+        t[2] = t[2] + x[i][2]
+    t
+    return np.array(t),len(x),x
+
+
+def b(tri,vert):
+    if vert_neibor(tri,vert)[1] > 3:
+        return 3./(8.*vert_neibor(tri,vert)[1])
+    if vert_neibor(tri,vert)[1] == 3:
+        return 3./16.
+
+
+
+
+def subdiviosn(mesh_number):    
+    global tt
+    od_1_between_0_2 = False
+    od_1_between_1_2 = False
+    od_1_between_0_1 = False
+    mesh_triangles = []
+#     if len(neibor(mesh_number)) == 1:
+#         try:
+#             od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[0])) 
+#             od_2 = .5*(tt[mesh_number][1] + tt[mesh_number][2])
+#             od_3 = .5*(tt[mesh_number][0] + tt[mesh_number][1])
+#             od_1_between_0_2 = True
+#         except:
+#             pass
+#         try:
+#             od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[0])) 
+#             od_2 = .5*(tt[mesh_number][1] + tt[mesh_number][2])
+#             od_3 = .5*(tt[mesh_number][0] + tt[mesh_number][2])
+#             od_1_between_0_1 = True
+#         except:
+#             pass
+#         try:
+#             od_1 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[0])) 
+#             od_2 = .5*(tt[mesh_number][1] + tt[mesh_number][0])
+#             od_3 = .5*(tt[mesh_number][0] + tt[mesh_number][2])
+#             od_1_between_1_2 = True
+#         except:
+#             pass
+
+#         if vert_neibor(mesh_number,0)[1] > 2:
+#             ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+#         if vert_neibor(mesh_number,0)[1] == 2:
+#             ev_1 = (1./8.) * (tt[mesh_number][1] + tt[mesh_number][2]) + (3./4.)*tt[mesh_number][0]
+
+#         if vert_neibor(mesh_number,1)[1] > 2:
+#             ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+#         if vert_neibor(mesh_number,1)[1] == 2:
+#             ev_2 = (1./8.) * (tt[mesh_number][2] + tt[mesh_number][0]) + (3./4.)*tt[mesh_number][1]
+#         if vert_neibor(mesh_number,2)[1] > 2:
+#             ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+#         if vert_neibor(mesh_number,2)[1] == 2:
+#             ev_3 = (1./8.) * (tt[mesh_number][2] + tt[mesh_number][1]) + (3./4.)*tt[mesh_number][0]
+#         if od_1_between_0_2:
+#             mesh_triangles.append([od_1,od_2,od_3])
+#             mesh_triangles.append([od_3,ev_2,od_2])
+#             mesh_triangles.append([od_3,ev_1,od_1])
+#             mesh_triangles.append([od_1,ev_3,od_2])
+
+
+#         if od_1_between_0_1:
+#             mesh_triangles.append([od_1,od_2,od_3])
+#             mesh_triangles.append([od_3,ev_2,od_2])
+#             mesh_triangles.append([od_3,ev_1,od_1])
+#             mesh_triangles.append([od_1,ev_3,od_2])
+#         return mesh_triangles
+    if len(neibor(mesh_number)) == 3:
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[0])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[1])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[2])) 
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+        #    print("first try")
+        except:
+            pass
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[1])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[0])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[2])) 
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)            
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+            od_1_between_0_2 = True
+      #      print("second try")
+        except:
+            pass
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[2])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[1])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[0]))
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+            od_1_between_0_2 = True
+       #     print("third try")
+        except:
+            pass
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[0])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[2])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[1]))
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+            od_1_between_0_2 = True
+     #       print("forth try")
+        except:
+            pass
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[2])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[0])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[1]))
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+            od_1_between_0_2 = True
+   #         print("fifth try")
+        except:
+            pass
+        try:
+            
+            od_1 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][1] + far_vert(tt[mesh_number][2],tt[mesh_number][0],neibor(mesh_number)[1])) 
+            od_2 = 3.0/8.0 * (tt[mesh_number][1] + tt[mesh_number][2]) + 1.0/8.0 * (tt[mesh_number][0] + far_vert(tt[mesh_number][2],tt[mesh_number][1],neibor(mesh_number)[2])) 
+            od_3 = 3.0/8.0 * (tt[mesh_number][0] + tt[mesh_number][1]) + 1.0/8.0 * (tt[mesh_number][2] + far_vert(tt[mesh_number][1],tt[mesh_number][0],neibor(mesh_number)[0]))
+            ev_1 = tt[mesh_number][0]*(1.-(vert_neibor(mesh_number,0)[1]*b(mesh_number,0)))+ (vert_neibor(mesh_number,0)[0]) * b(mesh_number,0)
+            ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]*b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+            ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]*b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+            mesh_triangles.append([od_1,od_2,od_3])
+            mesh_triangles.append([od_3,ev_2,od_2])
+            mesh_triangles.append([od_3,ev_1,od_1])
+            mesh_triangles.append([od_1,ev_3,od_2])
+            od_1_between_0_2 = True
+     #       print("sixth try")
+        except:
+            pass
+        return mesh_triangles
+        
+#     ev_2 = tt[mesh_number][1]*(1-(vert_neibor(mesh_number,1)[1]**b(mesh_number,1))) + (vert_neibor(mesh_number,1)[0]) * b(mesh_number,1)
+#     ev_3 = tt[mesh_number][2]*(1-(vert_neibor(mesh_number,2)[1]**b(mesh_number,2))) + (vert_neibor(mesh_number,2)[0]) * b(mesh_number,2)
+# #     print(ev_1)
+#     print(ev_2)
+#     print(ev_3)
+#     print("======")
+#     print(od_1)
+#     print(od_2)
+#     print(od_3)
+
+
+
+
+
+division = tt
+
+
+
+#tt = tt * 20
+
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+
+
+
+
+
+
+# # Display resulting triangular mesh using Matplotlib. This can also be done
+# # with mayavi (see skimage.measure.marching_cubes_lewiner docstring).
+# fig = plt.figure(figsize=(10, 10))
+# ax = fig.add_subplot(111, projection='3d')
+
+# # Fancy indexing: `verts[faces]` to generate a collection of triangles
+# mesh = Poly3DCollection(x)
+# mesh.set_edgecolor('k')
+# ax.add_collection3d(mesh)
+
+# ax.set_xlabel("x-axis: a = 6 per ellipsoid")
+# ax.set_ylabel("y-axis: b = 10")
+# ax.set_zlabel("z-axis: c = 16")
+
+# ax.set_xlim(0, 24)  # a = 6 (times two for 2nd ellipsoid)
+# ax.set_ylim(0, 20)  # b = 10
+# ax.set_zlim(0, 32)  # c = 16
+
+# plt.tight_layout()
+# plt.show()
+
+glutInit()
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
+glutInitWindowSize(600, 600)
+glutInitWindowPosition(400, 70)
+glutCreateWindow("Revolution")
+init()
+glutDisplayFunc(test1)
+
+glutKeyboardFunc(keyPressed)
+glutMainLoop()

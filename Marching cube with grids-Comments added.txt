@@ -1,0 +1,1019 @@
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+import numpy as np
+import os
+import nibabel
+#import matplotlib.pyplot as plt
+
+
+
+import os
+import nibabel    #Use to load the image data
+#import matplotlib.pyplot as plt
+
+
+data_path = '/Users/mahsa/Documents/CPSC/Final project 589/Codes'
+# files = os.listdir(data_path)
+# # Read in the data\n",
+# data_all = []
+# for data_file in files:
+#     if data_file[-3:] == 'hdr':
+
+data_mri = nibabel.load(data_path + "/" + "fM00223_004.hdr").get_data()
+data_mri = np.rot90(data_mri.squeeze(), 1)     #"squeeze" is used to remove single-dimensional
+                                               #entries from the shape of the array
+data_mri = np.rot90(data_mri , 1)
+print data_mri.shape
+
+
+
+
+color_list = [
+        (0.4, 0.4, 0.4),
+        (1.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+        (0.0, 0.0, 1.0),
+        (0.0, 1.0, 1.0),
+        (1.0, 0.0, 1.0),
+        (1.0, 1.0, 0.0),
+        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.0),
+        (0.5, 0.0, 0.0),
+        (0.0, 0.5, 0.0),
+        (0.0, 0.0, 0.5),
+        (0.0, 0.5, 0.5),
+        (0.5, 0.0, 0.5),
+        (0.5, 0.5, 0.0),
+        (0.8, 0.8, 0.8),
+]
+
+# data_path = 'C:/Users/gadimzadeh/Downloads/MoAEpilot/fM00223'
+# files = os.listdir(data_path)
+
+# # Read in the data
+# data_all = []
+# for data_file in files:
+#     if data_file[-3:] == 'hdr':
+#         data = nibabel.load(data_path + "/" + data_file).get_data()
+# data = np.rot90(data.squeeze(), 1)
+# data.shape
+
+
+# fig, ax = plt.subplots(1, 6, figsize=[18, 3])
+
+# n = 0
+# slice = 0
+# for _ in range(6):
+#     ax[n].imshow(data[:, :, slice])
+#     ax[n].set_xticks([])
+#     ax[n].set_yticks([])
+#     ax[n].set_title('Slice number: {}'.format(slice), color='r')
+#     n += 1
+#     slice += 10
+    
+# fig.subplots_adjust(wspace=0, hspace=0)
+# plt.show()
+
+
+#look up tables
+#"aiCubeEdgeFlags" :that the algorithm uses to indicate the edge intersections and how a surface cuts through 
+#each cube in a 3D data set, to make the programming convenient and the performance fast. 
+aiCubeEdgeFlags=[
+        0x000, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c, 0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00, 
+        0x190, 0x099, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c, 0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90, 
+        0x230, 0x339, 0x033, 0x13a, 0x636, 0x73f, 0x435, 0x53c, 0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30, 
+        0x3a0, 0x2a9, 0x1a3, 0x0aa, 0x7a6, 0x6af, 0x5a5, 0x4ac, 0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0, 
+        0x460, 0x569, 0x663, 0x76a, 0x066, 0x16f, 0x265, 0x36c, 0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60, 
+        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0x0ff, 0x3f5, 0x2fc, 0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0, 
+        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x055, 0x15c, 0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950, 
+        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0x0cc, 0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0, 
+        0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc, 0x0cc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0, 
+        0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c, 0x15c, 0x055, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650, 
+        0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc, 0x2fc, 0x3f5, 0x0ff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0, 
+        0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c, 0x36c, 0x265, 0x16f, 0x066, 0x76a, 0x663, 0x569, 0x460, 
+        0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac, 0x4ac, 0x5a5, 0x6af, 0x7a6, 0x0aa, 0x1a3, 0x2a9, 0x3a0, 
+        0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c, 0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x033, 0x339, 0x230, 
+        0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c, 0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x099, 0x190, 
+        0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c, 0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x000
+]
+
+
+
+triTable=[[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 8, 3, 9, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 2, 10, 0, 2, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[2, 8, 3, 2, 10, 8, 10, 9, 8, -1, -1, -1, -1, -1, -1, -1],
+[3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 11, 2, 8, 11, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 9, 0, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 11, 2, 1, 9, 11, 9, 8, 11, -1, -1, -1, -1, -1, -1, -1],
+[3, 10, 1, 11, 10, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 10, 1, 0, 8, 10, 8, 11, 10, -1, -1, -1, -1, -1, -1, -1],
+[3, 9, 0, 3, 11, 9, 11, 10, 9, -1, -1, -1, -1, -1, -1, -1],
+[9, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 3, 0, 7, 3, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 1, 9, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 1, 9, 4, 7, 1, 7, 3, 1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 4, 7, 3, 0, 4, 1, 2, 10, -1, -1, -1, -1, -1, -1, -1],
+[9, 2, 10, 9, 0, 2, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1],
+[2, 10, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4, -1, -1, -1, -1],
+[8, 4, 7, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[11, 4, 7, 11, 2, 4, 2, 0, 4, -1, -1, -1, -1, -1, -1, -1],
+[9, 0, 1, 8, 4, 7, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1],
+[4, 7, 11, 9, 4, 11, 9, 11, 2, 9, 2, 1, -1, -1, -1, -1],
+[3, 10, 1, 3, 11, 10, 7, 8, 4, -1, -1, -1, -1, -1, -1, -1],
+[1, 11, 10, 1, 4, 11, 1, 0, 4, 7, 11, 4, -1, -1, -1, -1],
+[4, 7, 8, 9, 0, 11, 9, 11, 10, 11, 0, 3, -1, -1, -1, -1],
+[4, 7, 11, 4, 11, 9, 9, 11, 10, -1, -1, -1, -1, -1, -1, -1],
+[9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 5, 4, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 5, 4, 1, 5, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[8, 5, 4, 8, 3, 5, 3, 1, 5, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, 9, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 0, 8, 1, 2, 10, 4, 9, 5, -1, -1, -1, -1, -1, -1, -1],
+[5, 2, 10, 5, 4, 2, 4, 0, 2, -1, -1, -1, -1, -1, -1, -1],
+[2, 10, 5, 3, 2, 5, 3, 5, 4, 3, 4, 8, -1, -1, -1, -1],
+[9, 5, 4, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 11, 2, 0, 8, 11, 4, 9, 5, -1, -1, -1, -1, -1, -1, -1],
+[0, 5, 4, 0, 1, 5, 2, 3, 11, -1, -1, -1, -1, -1, -1, -1],
+[2, 1, 5, 2, 5, 8, 2, 8, 11, 4, 8, 5, -1, -1, -1, -1],
+[10, 3, 11, 10, 1, 3, 9, 5, 4, -1, -1, -1, -1, -1, -1, -1],
+[4, 9, 5, 0, 8, 1, 8, 10, 1, 8, 11, 10, -1, -1, -1, -1],
+[5, 4, 0, 5, 0, 11, 5, 11, 10, 11, 0, 3, -1, -1, -1, -1],
+[5, 4, 8, 5, 8, 10, 10, 8, 11, -1, -1, -1, -1, -1, -1, -1],
+[9, 7, 8, 5, 7, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 3, 0, 9, 5, 3, 5, 7, 3, -1, -1, -1, -1, -1, -1, -1],
+[0, 7, 8, 0, 1, 7, 1, 5, 7, -1, -1, -1, -1, -1, -1, -1],
+[1, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 7, 8, 9, 5, 7, 10, 1, 2, -1, -1, -1, -1, -1, -1, -1],
+[10, 1, 2, 9, 5, 0, 5, 3, 0, 5, 7, 3, -1, -1, -1, -1],
+[8, 0, 2, 8, 2, 5, 8, 5, 7, 10, 5, 2, -1, -1, -1, -1],
+[2, 10, 5, 2, 5, 3, 3, 5, 7, -1, -1, -1, -1, -1, -1, -1],
+[7, 9, 5, 7, 8, 9, 3, 11, 2, -1, -1, -1, -1, -1, -1, -1],
+[9, 5, 7, 9, 7, 2, 9, 2, 0, 2, 7, 11, -1, -1, -1, -1],
+[2, 3, 11, 0, 1, 8, 1, 7, 8, 1, 5, 7, -1, -1, -1, -1],
+[11, 2, 1, 11, 1, 7, 7, 1, 5, -1, -1, -1, -1, -1, -1, -1],
+[9, 5, 8, 8, 5, 7, 10, 1, 3, 10, 3, 11, -1, -1, -1, -1],
+[5, 7, 0, 5, 0, 9, 7, 11, 0, 1, 0, 10, 11, 10, 0, -1],
+[11, 10, 0, 11, 0, 3, 10, 5, 0, 8, 0, 7, 5, 7, 0, -1],
+[11, 10, 5, 7, 11, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[10, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 0, 1, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 8, 3, 1, 9, 8, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1],
+[1, 6, 5, 2, 6, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 6, 5, 1, 2, 6, 3, 0, 8, -1, -1, -1, -1, -1, -1, -1],
+[9, 6, 5, 9, 0, 6, 0, 2, 6, -1, -1, -1, -1, -1, -1, -1],
+[5, 9, 8, 5, 8, 2, 5, 2, 6, 3, 2, 8, -1, -1, -1, -1],
+[2, 3, 11, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[11, 0, 8, 11, 2, 0, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1],
+[0, 1, 9, 2, 3, 11, 5, 10, 6, -1, -1, -1, -1, -1, -1, -1],
+[5, 10, 6, 1, 9, 2, 9, 11, 2, 9, 8, 11, -1, -1, -1, -1],
+[6, 3, 11, 6, 5, 3, 5, 1, 3, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 11, 0, 11, 5, 0, 5, 1, 5, 11, 6, -1, -1, -1, -1],
+[3, 11, 6, 0, 3, 6, 0, 6, 5, 0, 5, 9, -1, -1, -1, -1],
+[6, 5, 9, 6, 9, 11, 11, 9, 8, -1, -1, -1, -1, -1, -1, -1],
+[5, 10, 6, 4, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 3, 0, 4, 7, 3, 6, 5, 10, -1, -1, -1, -1, -1, -1, -1],
+[1, 9, 0, 5, 10, 6, 8, 4, 7, -1, -1, -1, -1, -1, -1, -1],
+[10, 6, 5, 1, 9, 7, 1, 7, 3, 7, 9, 4, -1, -1, -1, -1],
+[6, 1, 2, 6, 5, 1, 4, 7, 8, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 5, 5, 2, 6, 3, 0, 4, 3, 4, 7, -1, -1, -1, -1],
+[8, 4, 7, 9, 0, 5, 0, 6, 5, 0, 2, 6, -1, -1, -1, -1],
+[7, 3, 9, 7, 9, 4, 3, 2, 9, 5, 9, 6, 2, 6, 9, -1],
+[3, 11, 2, 7, 8, 4, 10, 6, 5, -1, -1, -1, -1, -1, -1, -1],
+[5, 10, 6, 4, 7, 2, 4, 2, 0, 2, 7, 11, -1, -1, -1, -1],
+[0, 1, 9, 4, 7, 8, 2, 3, 11, 5, 10, 6, -1, -1, -1, -1],
+[9, 2, 1, 9, 11, 2, 9, 4, 11, 7, 11, 4, 5, 10, 6, -1],
+[8, 4, 7, 3, 11, 5, 3, 5, 1, 5, 11, 6, -1, -1, -1, -1],
+[5, 1, 11, 5, 11, 6, 1, 0, 11, 7, 11, 4, 0, 4, 11, -1],
+[0, 5, 9, 0, 6, 5, 0, 3, 6, 11, 6, 3, 8, 4, 7, -1],
+[6, 5, 9, 6, 9, 11, 4, 7, 9, 7, 11, 9, -1, -1, -1, -1],
+[10, 4, 9, 6, 4, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 10, 6, 4, 9, 10, 0, 8, 3, -1, -1, -1, -1, -1, -1, -1],
+[10, 0, 1, 10, 6, 0, 6, 4, 0, -1, -1, -1, -1, -1, -1, -1],
+[8, 3, 1, 8, 1, 6, 8, 6, 4, 6, 1, 10, -1, -1, -1, -1],
+[1, 4, 9, 1, 2, 4, 2, 6, 4, -1, -1, -1, -1, -1, -1, -1],
+[3, 0, 8, 1, 2, 9, 2, 4, 9, 2, 6, 4, -1, -1, -1, -1],
+[0, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[8, 3, 2, 8, 2, 4, 4, 2, 6, -1, -1, -1, -1, -1, -1, -1],
+[10, 4, 9, 10, 6, 4, 11, 2, 3, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 2, 2, 8, 11, 4, 9, 10, 4, 10, 6, -1, -1, -1, -1],
+[3, 11, 2, 0, 1, 6, 0, 6, 4, 6, 1, 10, -1, -1, -1, -1],
+[6, 4, 1, 6, 1, 10, 4, 8, 1, 2, 1, 11, 8, 11, 1, -1],
+[9, 6, 4, 9, 3, 6, 9, 1, 3, 11, 6, 3, -1, -1, -1, -1],
+[8, 11, 1, 8, 1, 0, 11, 6, 1, 9, 1, 4, 6, 4, 1, -1],
+[3, 11, 6, 3, 6, 0, 0, 6, 4, -1, -1, -1, -1, -1, -1, -1],
+[6, 4, 8, 11, 6, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[7, 10, 6, 7, 8, 10, 8, 9, 10, -1, -1, -1, -1, -1, -1, -1],
+[0, 7, 3, 0, 10, 7, 0, 9, 10, 6, 7, 10, -1, -1, -1, -1],
+[10, 6, 7, 1, 10, 7, 1, 7, 8, 1, 8, 0, -1, -1, -1, -1],
+[10, 6, 7, 10, 7, 1, 1, 7, 3, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 6, 1, 6, 8, 1, 8, 9, 8, 6, 7, -1, -1, -1, -1],
+[2, 6, 9, 2, 9, 1, 6, 7, 9, 0, 9, 3, 7, 3, 9, -1],
+[7, 8, 0, 7, 0, 6, 6, 0, 2, -1, -1, -1, -1, -1, -1, -1],
+[7, 3, 2, 6, 7, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[2, 3, 11, 10, 6, 8, 10, 8, 9, 8, 6, 7, -1, -1, -1, -1],
+[2, 0, 7, 2, 7, 11, 0, 9, 7, 6, 7, 10, 9, 10, 7, -1],
+[1, 8, 0, 1, 7, 8, 1, 10, 7, 6, 7, 10, 2, 3, 11, -1],
+[11, 2, 1, 11, 1, 7, 10, 6, 1, 6, 7, 1, -1, -1, -1, -1],
+[8, 9, 6, 8, 6, 7, 9, 1, 6, 11, 6, 3, 1, 3, 6, -1],
+[0, 9, 1, 11, 6, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[7, 8, 0, 7, 0, 6, 3, 11, 0, 11, 6, 0, -1, -1, -1, -1],
+[7, 11, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[7, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 0, 8, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 1, 9, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[8, 1, 9, 8, 3, 1, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1],
+[10, 1, 2, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, 3, 0, 8, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1],
+[2, 9, 0, 2, 10, 9, 6, 11, 7, -1, -1, -1, -1, -1, -1, -1],
+[6, 11, 7, 2, 10, 3, 10, 8, 3, 10, 9, 8, -1, -1, -1, -1],
+[7, 2, 3, 6, 2, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[7, 0, 8, 7, 6, 0, 6, 2, 0, -1, -1, -1, -1, -1, -1, -1],
+[2, 7, 6, 2, 3, 7, 0, 1, 9, -1, -1, -1, -1, -1, -1, -1],
+[1, 6, 2, 1, 8, 6, 1, 9, 8, 8, 7, 6, -1, -1, -1, -1],
+[10, 7, 6, 10, 1, 7, 1, 3, 7, -1, -1, -1, -1, -1, -1, -1],
+[10, 7, 6, 1, 7, 10, 1, 8, 7, 1, 0, 8, -1, -1, -1, -1],
+[0, 3, 7, 0, 7, 10, 0, 10, 9, 6, 10, 7, -1, -1, -1, -1],
+[7, 6, 10, 7, 10, 8, 8, 10, 9, -1, -1, -1, -1, -1, -1, -1],
+[6, 8, 4, 11, 8, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 6, 11, 3, 0, 6, 0, 4, 6, -1, -1, -1, -1, -1, -1, -1],
+[8, 6, 11, 8, 4, 6, 9, 0, 1, -1, -1, -1, -1, -1, -1, -1],
+[9, 4, 6, 9, 6, 3, 9, 3, 1, 11, 3, 6, -1, -1, -1, -1],
+[6, 8, 4, 6, 11, 8, 2, 10, 1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, 3, 0, 11, 0, 6, 11, 0, 4, 6, -1, -1, -1, -1],
+[4, 11, 8, 4, 6, 11, 0, 2, 9, 2, 10, 9, -1, -1, -1, -1],
+[10, 9, 3, 10, 3, 2, 9, 4, 3, 11, 3, 6, 4, 6, 3, -1],
+[8, 2, 3, 8, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1, -1],
+[0, 4, 2, 4, 6, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 9, 0, 2, 3, 4, 2, 4, 6, 4, 3, 8, -1, -1, -1, -1],
+[1, 9, 4, 1, 4, 2, 2, 4, 6, -1, -1, -1, -1, -1, -1, -1],
+[8, 1, 3, 8, 6, 1, 8, 4, 6, 6, 10, 1, -1, -1, -1, -1],
+[10, 1, 0, 10, 0, 6, 6, 0, 4, -1, -1, -1, -1, -1, -1, -1],
+[4, 6, 3, 4, 3, 8, 6, 10, 3, 0, 3, 9, 10, 9, 3, -1],
+[10, 9, 4, 6, 10, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 9, 5, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, 4, 9, 5, 11, 7, 6, -1, -1, -1, -1, -1, -1, -1],
+[5, 0, 1, 5, 4, 0, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1],
+[11, 7, 6, 8, 3, 4, 3, 5, 4, 3, 1, 5, -1, -1, -1, -1],
+[9, 5, 4, 10, 1, 2, 7, 6, 11, -1, -1, -1, -1, -1, -1, -1],
+[6, 11, 7, 1, 2, 10, 0, 8, 3, 4, 9, 5, -1, -1, -1, -1],
+[7, 6, 11, 5, 4, 10, 4, 2, 10, 4, 0, 2, -1, -1, -1, -1],
+[3, 4, 8, 3, 5, 4, 3, 2, 5, 10, 5, 2, 11, 7, 6, -1],
+[7, 2, 3, 7, 6, 2, 5, 4, 9, -1, -1, -1, -1, -1, -1, -1],
+[9, 5, 4, 0, 8, 6, 0, 6, 2, 6, 8, 7, -1, -1, -1, -1],
+[3, 6, 2, 3, 7, 6, 1, 5, 0, 5, 4, 0, -1, -1, -1, -1],
+[6, 2, 8, 6, 8, 7, 2, 1, 8, 4, 8, 5, 1, 5, 8, -1],
+[9, 5, 4, 10, 1, 6, 1, 7, 6, 1, 3, 7, -1, -1, -1, -1],
+[1, 6, 10, 1, 7, 6, 1, 0, 7, 8, 7, 0, 9, 5, 4, -1],
+[4, 0, 10, 4, 10, 5, 0, 3, 10, 6, 10, 7, 3, 7, 10, -1],
+[7, 6, 10, 7, 10, 8, 5, 4, 10, 4, 8, 10, -1, -1, -1, -1],
+[6, 9, 5, 6, 11, 9, 11, 8, 9, -1, -1, -1, -1, -1, -1, -1],
+[3, 6, 11, 0, 6, 3, 0, 5, 6, 0, 9, 5, -1, -1, -1, -1],
+[0, 11, 8, 0, 5, 11, 0, 1, 5, 5, 6, 11, -1, -1, -1, -1],
+[6, 11, 3, 6, 3, 5, 5, 3, 1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 10, 9, 5, 11, 9, 11, 8, 11, 5, 6, -1, -1, -1, -1],
+[0, 11, 3, 0, 6, 11, 0, 9, 6, 5, 6, 9, 1, 2, 10, -1],
+[11, 8, 5, 11, 5, 6, 8, 0, 5, 10, 5, 2, 0, 2, 5, -1],
+[6, 11, 3, 6, 3, 5, 2, 10, 3, 10, 5, 3, -1, -1, -1, -1],
+[5, 8, 9, 5, 2, 8, 5, 6, 2, 3, 8, 2, -1, -1, -1, -1],
+[9, 5, 6, 9, 6, 0, 0, 6, 2, -1, -1, -1, -1, -1, -1, -1],
+[1, 5, 8, 1, 8, 0, 5, 6, 8, 3, 8, 2, 6, 2, 8, -1],
+[1, 5, 6, 2, 1, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 3, 6, 1, 6, 10, 3, 8, 6, 5, 6, 9, 8, 9, 6, -1],
+[10, 1, 0, 10, 0, 6, 9, 5, 0, 5, 6, 0, -1, -1, -1, -1],
+[0, 3, 8, 5, 6, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[10, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[11, 5, 10, 7, 5, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[11, 5, 10, 11, 7, 5, 8, 3, 0, -1, -1, -1, -1, -1, -1, -1],
+[5, 11, 7, 5, 10, 11, 1, 9, 0, -1, -1, -1, -1, -1, -1, -1],
+[10, 7, 5, 10, 11, 7, 9, 8, 1, 8, 3, 1, -1, -1, -1, -1],
+[11, 1, 2, 11, 7, 1, 7, 5, 1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, 1, 2, 7, 1, 7, 5, 7, 2, 11, -1, -1, -1, -1],
+[9, 7, 5, 9, 2, 7, 9, 0, 2, 2, 11, 7, -1, -1, -1, -1],
+[7, 5, 2, 7, 2, 11, 5, 9, 2, 3, 2, 8, 9, 8, 2, -1],
+[2, 5, 10, 2, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1, -1],
+[8, 2, 0, 8, 5, 2, 8, 7, 5, 10, 2, 5, -1, -1, -1, -1],
+[9, 0, 1, 5, 10, 3, 5, 3, 7, 3, 10, 2, -1, -1, -1, -1],
+[9, 8, 2, 9, 2, 1, 8, 7, 2, 10, 2, 5, 7, 5, 2, -1],
+[1, 3, 5, 3, 7, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 7, 0, 7, 1, 1, 7, 5, -1, -1, -1, -1, -1, -1, -1],
+[9, 0, 3, 9, 3, 5, 5, 3, 7, -1, -1, -1, -1, -1, -1, -1],
+[9, 8, 7, 5, 9, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[5, 8, 4, 5, 10, 8, 10, 11, 8, -1, -1, -1, -1, -1, -1, -1],
+[5, 0, 4, 5, 11, 0, 5, 10, 11, 11, 3, 0, -1, -1, -1, -1],
+[0, 1, 9, 8, 4, 10, 8, 10, 11, 10, 4, 5, -1, -1, -1, -1],
+[10, 11, 4, 10, 4, 5, 11, 3, 4, 9, 4, 1, 3, 1, 4, -1],
+[2, 5, 1, 2, 8, 5, 2, 11, 8, 4, 5, 8, -1, -1, -1, -1],
+[0, 4, 11, 0, 11, 3, 4, 5, 11, 2, 11, 1, 5, 1, 11, -1],
+[0, 2, 5, 0, 5, 9, 2, 11, 5, 4, 5, 8, 11, 8, 5, -1],
+[9, 4, 5, 2, 11, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[2, 5, 10, 3, 5, 2, 3, 4, 5, 3, 8, 4, -1, -1, -1, -1],
+[5, 10, 2, 5, 2, 4, 4, 2, 0, -1, -1, -1, -1, -1, -1, -1],
+[3, 10, 2, 3, 5, 10, 3, 8, 5, 4, 5, 8, 0, 1, 9, -1],
+[5, 10, 2, 5, 2, 4, 1, 9, 2, 9, 4, 2, -1, -1, -1, -1],
+[8, 4, 5, 8, 5, 3, 3, 5, 1, -1, -1, -1, -1, -1, -1, -1],
+[0, 4, 5, 1, 0, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[8, 4, 5, 8, 5, 3, 9, 0, 5, 0, 3, 5, -1, -1, -1, -1],
+[9, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 11, 7, 4, 9, 11, 9, 10, 11, -1, -1, -1, -1, -1, -1, -1],
+[0, 8, 3, 4, 9, 7, 9, 11, 7, 9, 10, 11, -1, -1, -1, -1],
+[1, 10, 11, 1, 11, 4, 1, 4, 0, 7, 4, 11, -1, -1, -1, -1],
+[3, 1, 4, 3, 4, 8, 1, 10, 4, 7, 4, 11, 10, 11, 4, -1],
+[4, 11, 7, 9, 11, 4, 9, 2, 11, 9, 1, 2, -1, -1, -1, -1],
+[9, 7, 4, 9, 11, 7, 9, 1, 11, 2, 11, 1, 0, 8, 3, -1],
+[11, 7, 4, 11, 4, 2, 2, 4, 0, -1, -1, -1, -1, -1, -1, -1],
+[11, 7, 4, 11, 4, 2, 8, 3, 4, 3, 2, 4, -1, -1, -1, -1],
+[2, 9, 10, 2, 7, 9, 2, 3, 7, 7, 4, 9, -1, -1, -1, -1],
+[9, 10, 7, 9, 7, 4, 10, 2, 7, 8, 7, 0, 2, 0, 7, -1],
+[3, 7, 10, 3, 10, 2, 7, 4, 10, 1, 10, 0, 4, 0, 10, -1],
+[1, 10, 2, 8, 7, 4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 9, 1, 4, 1, 7, 7, 1, 3, -1, -1, -1, -1, -1, -1, -1],
+[4, 9, 1, 4, 1, 7, 0, 8, 1, 8, 7, 1, -1, -1, -1, -1],
+[4, 0, 3, 7, 4, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[4, 8, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[9, 10, 8, 10, 11, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 0, 9, 3, 9, 11, 11, 9, 10, -1, -1, -1, -1, -1, -1, -1],
+[0, 1, 10, 0, 10, 8, 8, 10, 11, -1, -1, -1, -1, -1, -1, -1],
+[3, 1, 10, 11, 3, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 2, 11, 1, 11, 9, 9, 11, 8, -1, -1, -1, -1, -1, -1, -1],
+[3, 0, 9, 3, 9, 11, 1, 2, 9, 2, 11, 9, -1, -1, -1, -1],
+[0, 2, 11, 8, 0, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[3, 2, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[2, 3, 8, 2, 8, 10, 10, 8, 9, -1, -1, -1, -1, -1, -1, -1],
+[9, 10, 2, 0, 9, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[2, 3, 8, 2, 8, 10, 0, 1, 8, 1, 10, 8, -1, -1, -1, -1],
+[1, 10, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[1, 3, 8, 9, 1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]]
+
+#"edge_vertex_addres":defined as a dictionary that its keys are the edges of 
+#cubes and the values are vertices related to each edg
+
+edge_vertex_address = {0:[0,1],1:[1,2],2:[2,3],3:[0,3],4:[4,5],5:[5,6],6:[6,7],7:[4,7],8:[0,4],9:[1,5],10:[2,6],11:[3,7]}
+
+#“normalize” function calculates the normal vector for each face. 
+def normalize(x):
+    l = np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
+    if l != 0:
+        t = x / float(l)
+    else:
+        t = x
+    return t
+
+def size(x):
+    return np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
+
+
+
+
+
+def draw_triangle():
+    global tt
+    global nnn
+    global zoom
+    
+    glBegin(GL_TRIANGLES)
+    for i in range(len(nnn)):
+        glNormal3f(nnn[i][0], nnn[i][1], nnn[i][2])          #creating the normal vector of triangle
+        glVertex3f( (tt[i][0][0]),  (tt[i][0][1]), (tt[i][0][2]))   #drawing the triangle via its three vertices
+        glVertex3f( (tt[i][1][0]),  (tt[i][1][1]), (tt[i][1][2]))
+        glVertex3f( (tt[i][2][0]),  (tt[i][2][1]), (tt[i][2][2]))
+
+    glEnd()
+
+
+
+def draw_triangle_45():
+    glBegin(GL_TRIANGLES)
+    glVertex3f( 0.0,  1.0, -1.0)
+    glVertex3f(-1.0, -1.0,  0.0)
+    glVertex3f( 1.0, -1.0,  0.0)
+    glEnd()
+    
+    #takes the number of the cube (i.number) and returns the coordinates of triangles in that cube. 
+    #This function creates a list of edges with vertices related to each edge.  
+def surface_sketcher(cube_num_index = 0):
+#   print cube_num_index
+    isolevel = 4
+    global adresses
+    global cube_list
+    global triTable
+    cube = cube_list[cube_num_index]
+#   print cube.index
+#   print cube.vertices
+    s = ""
+    points = []
+    
+    for item in cube.index:
+        item = str(item)
+        s = s + item
+        
+    cube_index = s
+    #print(cube_index)
+    index = int(cube_index,2)
+    edges = triTable[index]
+    edges = [e for e in edges if e != -1]
+#   print(edges)
+    con = 0
+    flag = False
+    for i in range(len(edges)):
+        points.append(edge_vertex_address[edges[i]])  #a list of each edge with its start 
+
+#   print(points)
+    cut_cordinate = []
+    normals = []
+    triangles = []
+    for item in points:
+        p1 = adresses[cube_num_index,item[0]]  #number of cube and the number of vertex in that
+
+        p2 = adresses[cube_num_index,item[1]]
+        
+        p_1 = data[p1[0]][p1[1]][p1[2]]  #pixel values of that vertex
+        p_2 = data[p2[0]][p2[1]][p2[2]]
+
+
+            
+        p_1_posx = cube.vertices[item[0]][0]     #Location of vertices (vertex number1)
+        p_1_posy = cube.vertices[item[0]][1]     #Location of vertices (vertex number2)
+        p_1_posz = cube.vertices[item[0]][2]
+        
+        p_2_posx = cube.vertices[item[1]][0]
+        p_2_posy = cube.vertices[item[1]][1]
+        p_2_posz = cube.vertices[item[1]][2]
+        
+        if p_1 > p_2:                           
+            p_1,p_2 = p_2,p_1    #replaces the position if the condition is true
+            p_1_posx,p_2_posx = p_2_posx,p_1_posx
+            p_1_posy,p_2_posy = p_2_posy,p_1_posy
+            p_1_posz,p_2_posz = p_2_posz,p_1_posz
+            
+        x = (p_2+p_1)/2              #intersection point will be in the middel of the two points
+        #mu = (p_2 - (p_2-x)/(p_2/p_1) - p_1)/(p_2 - p_1)
+#         mu = .9
+        if p_2 == p_1:
+            mu = .5    #if the pixel values are equal set mu=0.5 (inter section point in the middle)
+        else:
+            #mu = (max(data[p2[0]][p2[1]][p2[2]] ,data[p1[0]][p1[1]][p1[2]]) - data[p1[0]][p1[1]][p1[2]]) / (data[p2[0]][p2[1]][p2[2]] - data[p1[0]][p1[1]][p1[2]])
+            mu = float(1561.0 - p_1) / float(p_2 - p_1)   #for calculation of intersection point in between of two vertices
+            #mu = float(float(p_2) - float(p_2-x)/float(p_2/p_1) - p_1)/float(p_2 - p_1)
+        p_x = p_1_posx + mu * (p_2_posx - p_1_posx)
+        p_y = p_1_posy + mu * (p_2_posy - p_1_posy)
+        p_z = p_1_posz + mu * (p_2_posz - p_1_posz)
+#       print "mu is : , ",mu
+#       print "p_x is :" , p_x
+#       print "p_y is :" , p_y
+#       print "p_z is :" , p_z
+        cut_cordinate.append([p_x,p_y,p_z])   #this list determines the cut coordinates calculated above with interpolation formula
+        if len(cut_cordinate)%3 == 0:         #a triangle is formed!
+            v1 = cut_cordinate[len(cut_cordinate)-1]     
+            v2 = cut_cordinate[len(cut_cordinate)-2]
+            v3 = cut_cordinate[len(cut_cordinate)-3]
+            triangles.append([v1,v2,v3])      
+            v1 = np.array(v1)
+            v2 = np.array(v2)
+            v2 = np.array(v2)
+            normals.append(normalize(np.cross(v1 - v3,v1-v2)))     #calculating normal vector in the list
+  #  print "cut_cordinate is :" , cut_cordinate
+  ##  print "triangles is:" , triangles
+  #  print "normals is :" , normals
+    return cut_cordinate,triangles,normals
+
+
+def drawString (s):
+    for i in s:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(i))
+        
+edge_size = .3
+
+
+#The class “cube” draws the cubes in the environment to create the grids. 
+class Cube:
+    def __init__(self,i,j,k):    #used to define the light position
+        global edge_size
+        self.edges_size = edge_size
+        self.vertices = [[i,j,k],[i+self.edges_size,j,k],[i+self.edges_size,j,k+self.edges_size],
+                        [i,j,k+self.edges_size],[i,j+self.edges_size,k],
+                      [i+self.edges_size,j+self.edges_size,k],[i+self.edges_size,j+self.edges_size,k+self.edges_size],
+                      [i,j+self.edges_size,k+self.edges_size]]
+        #Self.edges defines the edges between each vertices
+        
+        self.edges2 = [((i,j,k),(i+self.edges_size,j,k)) , ((i+self.edges_size,j,k) ,(i+self.edges_size,j,k+self.edges_size)) , ((i+self.edges_size,j,k+self.edges_size),(i+self.edges_size,j+self.edges_size,k+self.edges_size)),
+                     ((i+self.edges_size,j+self.edges_size,k+self.edges_size),(i,j+self.edges_size,k+self.edges_size)),((i,j+self.edges_size,k+self.edges_size),(i,j + self.edges_size,k)),((i,j + self.edges_size,k),(i,j,k)),((i,j,k),(i,j,k +self.edges_size)),
+                     ((i,j,k + self.edges_size),(i +self.edges_size,j,k + self.edges_size)),((i,j + self.edges_size,k + self.edges_size),(i +self.edges_size,j +self.edges_size,k +self.edges_size)),((i+self.edges_size,j,k),(i+self.edges_size,j+self.edges_size,k)),((i+self.edges_size,j+self.edges_size,k),(i+self.edges_size,j+self.edges_size,k+self.edges_size)),
+                     ((i+self.edges_size,j+self.edges_size,k),(i,j+self.edges_size,k)),((i,j+self.edges_size,k+self.edges_size),((i,j,k+self.edges_size)))]
+        
+        self.edges = [[self.vertices[0],self.vertices[1]],[self.vertices[1],self.vertices[2]],
+                      [self.vertices[2],self.vertices[3]],[self.vertices[0],self.vertices[3]],
+                      [self.vertices[4],self.vertices[5]],[self.vertices[5],self.vertices[6]],
+                      [self.vertices[6],self.vertices[7]],[self.vertices[4],self.vertices[7]],
+                      [self.vertices[0],self.vertices[4]],[self.vertices[1],self.vertices[5]],
+                      [self.vertices[2],self.vertices[6]],[self.vertices[3],self.vertices[7]]]
+        self.index = [0,0,0,0,0,0,0,0]
+        self.number = 0
+
+cube_shape = (64,64,64)
+data = np.zeros(((cube_shape[0],cube_shape[1],cube_shape[2])))
+cube_list = []       #each created cube will be appended to a list named “cube_list”
+# for i in np.arange(0.0,.4,.2):
+#     for j in np.arange(0.0,.4,.2):
+#         for k in np.arange(0.0,.4,.2):
+#             x = Cube(i,j,k)
+#             cube_list.append(x)
+
+#cube_list = [Cube(0,0,0),Cube(.2,0,0),Cube(0,.2,0),Cube(.2,.2,0),Cube(0,0,-.2),Cube(.2,0,-.2),Cube(0,.2,-.2),Cube(.2,.2,-.2)]
+
+            
+
+# for i in np.arange(0,edge_size * image_shape[0] - edge_size-.1,edge_size):
+#     cube_list.append(Cube(i,0,0))
+
+# for i in np.arange(0,edge_size * image_shape[0] - edge_size-.1,edge_size):
+#     cube_list.append(Cube(i,.2,0))
+    
+# for i in np.arange(0,edge_size * image_shape[0] - edge_size-.1,edge_size):
+#     cube_list.append(Cube(i,0,-.2))
+    
+# for i in np.arange(0,edge_size * image_shape[0] - edge_size-.1,edge_size):
+#     cube_list.append(Cube(i,.2,-.2))
+    
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,0,0))
+
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.2,0))
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.4,0))
+
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,0,-.2))
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.2,-.2))
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.4,-.2))
+
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,0,-.4))
+    
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.2,-.4))
+                     
+# for i in np.arange(0,.6,.2):
+#     cube_list.append(Cube(i,.4,-.4))
+    
+
+    
+# for k in np.arange(0,(edge_size * cube_shape[2] - edge_size-.02), edge_size):
+#     for i in np.arange(0,edge_size * cube_shape[0] - edge_size-.02,edge_size):
+#         for j in np.arange(0,edge_size * cube_shape[1] - edge_size-.02,edge_size):
+#             x = Cube(i,j,k)
+#             cube_list.append(x)
+
+number = 0       #to traverse each vertex of a each cube in the cube-list and create the addresses dictionary
+for k in np.arange(0,18.9, .3):
+    for i in np.arange(0,18.9,.3):
+        for j in np.arange(0,18.9,.3):
+            x = Cube(i,j,k)
+            x.number = number
+            number += 1
+            cube_list.append(x)
+            
+            
+
+segment_shape = (64,64,64)    #“segment_shape” has the same size of segmented part
+
+#“obj” is defined as a zero matrix which has the same size of “segment-shape”. 
+#We use “obj” list to put all the related data to segmented part in that list
+obj = np.zeros((segment_shape[0],segment_shape[1],segment_shape[2]))
+
+obj[:,:,:] = data_mri[0:64,0:64,0:64]
+
+# obj[1][1][0] = 10
+# obj[1][1][1] = 10
+# obj[1][1][2] = 10
+# obj[1][1][3] = 10
+
+
+# obj[2][1][0] = 10
+# obj[2][1][1] = 10
+# obj[2][1][2] = 10
+# obj[2][1][3] = 10
+
+# obj[1][2][0] = 10
+# obj[1][2][1] = 10
+# obj[1][2][2] = 10
+# obj[1][2][3] = 10
+
+# obj[2][2][0] = 10
+# obj[2][2][1] = 10
+# obj[2][2][2] = 10
+# obj[2][2][3] = 10
+
+shift = 0         #“shift” is the variable defined to move the “obj” in the grid
+
+# for q in range(len(obj[:,0,0])):
+#     for w in range(len(obj[0,:,0])):
+#         for e in range(len(obj[0,0,:])):
+#             if obj[q][w][e] != 0:
+#                 data[q+shift][w+shift][e+shift] = obj[q][w][e]
+
+
+data[0+shift:len(obj[:,0,0]) + shift , 0+shift:len(obj[0,:,0]) + shift , 0+shift:len(obj[0,0,:]) + shift] = obj[:,:,:]
+
+
+i = 0
+j = 0
+k = 0
+cube_index = 0      #the cube-index indicated which vertex is equal to one and which is equal to zero
+adresses = {}
+for cube in cube_list:
+    for t in range(8):
+        if t == 0:
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 1:
+            i += 1
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 2:
+            k += 1
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 3:
+            i -= 1
+            
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 4:
+            j += 1
+            k -= 1
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 5:
+            i += 1
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 6:
+            k += 1
+            adresses[(cube_index,t)] = [i,j,k]
+        if t == 7:
+            i -= 1
+            adresses[(cube_index,t)] = [i,j,k]
+        
+        if data[i][j][k] > 1561:    #The threshold for pixel values is set to 1561 and at the end of each nested for loop
+            cube.index[t] = 1
+        else :
+            cube.index[t] = 0
+    cube.index.reverse()   #we need to use the pixel values for look up table 
+    #and binary numbers are read from right to left
+    k -=1      
+#     i += 1
+#     j += 1
+    cube_index += 1
+    if j == len(data[0,:,0])-1:
+        if i == len(data[:,0,0])-2:
+            j = 0
+            i = 0
+            k += 1
+        else:
+            i += 1
+            j = 0
+            #k = 0
+
+w = [] 
+hide = True
+edited_cube_list = []   #to remove unnecessary cubes to increase the efficiency of the code
+for item in cube_list:
+    if item.index != [0,0,0,0,0,0,0,0] and item.index != [1,1,1,1,1,1,1,1]:
+        edited_cube_list.append(item)
+
+for item in edited_cube_list:
+    w.append(surface_sketcher(item.number))
+
+#del cube_listx
+    
+o = []
+for i in edited_cube_list:
+    y = surface_sketcher(i.number)[1]   #i.number=number of cube//index 1=triangles/index 0=coordinate//index 2=normals
+    if len(y) > 1 :                     #if there is more than one triangle in the cube!(we are creatign a neat list of triangles with 3 elements of x and y and z
+        x = np.array(y)                 
+        temp = []
+        for t in range(len(x[:,0,0])):              
+            temp.append(x[t,:,:])               #each triangle is appended to temp
+        o.extend(temp)                          #cleans the indented lists and creates one clean list
+    else:
+        o.extend(y)
+
+tt = np.array(o)            #an array is created from the clean list of triangles(list "O")
+tt = tt / tt.max()          #To fit into the coordinates of opengl between zero to one
+tt = tt - .5                #to better display considering the side margines
+
+
+nn = []                      #normal vector for each triangle
+for i in edited_cube_list:
+    y = surface_sketcher(i.number)[2]    #index 2 is for normals
+    nn.extend(y)
+
+nnn = np.array(nn)     #putting normal vectors into an array
+
+
+vert = []
+for item in edited_cube_list:
+    for items in item.edges:
+        vert.append(items)
+vert = np.array(vert)
+vert = vert / vert.max()
+vert = vert - .5
+    
+def test1():
+    glClear(GL_COLOR_BUFFER_BIT)
+    global cube_list
+    global test
+    global w
+    global tt
+    global vert
+    e=0
+    if not hide:
+#         for j in edited_cube_list:
+#             for i in j.edges:
+#                 glColor3f(0.8, 0.8, 0.8)
+#                 glBegin(GL_LINE_STRIP)
+#                 glColor3f(1.0,0.0,1.0) 
+#                 glVertex3f(i[0][0],i[0][1],i[0][2])
+#                 glVertex3f(i[1][0],i[1][1],i[1][2])
+# #                 glVertex3f(.2,.2,0)
+# #                 glVertex3f(.4,.2,0)
+# #                 glVertex3f(.4,.4,0)
+# #                 glVertex3f(.2,.4,0)
+# #                 glVertex3f(.2,.2,0)
+#                 glEnd()
+    
+    
+        for j in range(len(vert)):
+            glColor3f(1.0,0.0,1.0) 
+            glBegin(GL_LINE_STRIP)
+            glColor3f(1.0,0.0,1.0) 
+            glVertex3f(vert[j][0][0],vert[j][0][1],vert[j][0][2])
+            glVertex3f(vert[j][1][0],vert[j][1][1],vert[j][1][2])
+            glEnd()
+            
+
+
+#                e += 1
+
+
+    fl = False
+    glPushMatrix()
+    cc = 0
+    counter = 0
+    glColor3f(0.4, 0.4, 0.4)
+    draw_triangle()
+#     glColor3f(1.0,0.0,0.0) 
+#     glPointSize(20.0) 
+#     glBegin (GL_POINTS)
+#     glVertex3f (0.6, 0.25, 0.25)
+#     glEnd ()
+    glPopMatrix()
+    glFlush()
+
+#     glColor3f(1.0, 0.0, 0.0)
+#     glClear(GL_COLOR_BUFFER_BIT)
+#     glPushMatrix()
+
+#     glNormal3f(0.0, 0.0, 1.0)
+#     draw_triangle()
+
+#     glTranslatef(2.0, 0.0, 0.0)
+#     draw_triangle_45()
+
+#     glTranslatef(2.0, 0.0, 0.0)
+#     glNormal3f(0.0, 1.0, 1.0)
+#     draw_triangle_45()
+
+#     glTranslatef(2.0, 0.0, 0.0)
+#     glNormal3f(0.0, 0.0, 1.0)
+#     glRotatef(45.0, -1.0, 0.0, 0.0)
+#     draw_triangle()
+
+#     glPopMatrix()
+#     glFlush()
+    
+
+
+left_botton_pressed = False
+
+def Mouse( button,  state,  x,  y):
+    if(button == GLUT_LEFT_BUTTON and state == GLUT_UP):
+        left_botton_pressed = False
+
+        
+prev_x = 0
+prev_y = 0
+
+def MotionMouse( x,  y):       #left click and movement of mouse returns to initial situation
+    global prev_x
+    global prev_y
+    delta_x = x - prev_x
+    delta_y = y - prev_y
+    glLoadIdentity()
+    glClear(GL_COLOR_BUFFER_BIT)
+    glRotatef(-90.0,1.0 , 0.0 , 0.0)
+    glRotatef(-10.0,0.0 , 1.0 , 0.0)          #rotations are made to give a better display quallity
+    glRotatef(-60.0,0.0 , 0.0 , 1.0)
+    glRotatef(35.0,0.0 , 1.0 , 0.0)
+    if left_botton_pressed:
+        prev_x = x
+        prev_y = y
+    
+    
+
+
+    
+# for k in range(10):
+#     for j in range(10):
+#         for i in range(10):
+#             if data[i,j,k] == 0:
+#                 cube_list[j].vertices[i] = 0
+#             else:
+#                 cube_list[j].vertices[i] = 0
+
+
+    
+           
+        
+        
+zoom_in = 1.
+zoom_out = 1.
+def keyPressed(key, x, y):
+    global zoom_in,zoom_out
+    global tt
+    global hide
+    global vert
+#     glLoadIdentity()
+#     glClear(GL_COLOR_BUFFER_BIT)
+    if key == 'q':
+        glRotatef(5,1.0 , 0.0 , 0.0)
+    if key == 'w':
+        glRotatef(-5,1.0 , 0.0 , 0.0)
+    if key == 'a':
+        glRotatef(5,0.0 , 1.0 , 0.0)
+    if key == 's':
+        glRotatef(-5,0.0 , 1.0 , 0.0)
+    if key == 'z':
+        glRotatef(5,0.0 , 0.0 , 1.0)
+    if key == 'x':
+        glRotatef(-5,0.0 , 0.0 , 1.0)
+    if key == 'e':
+        zoom = zoom_in + .1
+        tt = tt * zoom
+        vert = vert * zoom
+    if key == 'd':
+        zoom = zoom_out - .1
+        tt = tt * zoom
+        vert = vert * zoom
+    if key == 'h':
+        hide = not hide
+   
+    glutPostRedisplay()
+
+# q = 0    
+# data = np.random.rand(3,3,3)*10
+# for cubes in cube_list:
+#     for k in range(len(data[0,0,:])):
+#         for j in range(len(data[0,:,0])):
+#             for i in range(len(data[:,0,0])-1,-1,-1):
+#                 if data[i][j][i] > 5:
+#                     cube.index[q]  = 1
+#                 else:
+#                     cube.index[q] = 0
+#                 q += 1
+            
+
+            
+            
+            
+
+    
+            
+
+
+        
+#     k += 1
+#     if i == 0 and j < len(data[0,:,0]-1):
+#         i = len(data[:,0,0]) - 1
+#         j += 1
+#         k = 1
+    
+#     if i == 0 and j == len(data[0,:,0]-1):
+#         i = len(data[:,0,0]) - 1
+#         j = 0
+#         k += 1
+        
+       
+    
+    #print(cube.index)
+    
+        
+            
+            
+        
+        
+            
+def init():
+    light0_diffuse = (0.0, 0.25, 0.25, 0)
+    light0_position = (1.0, 1.0, 0.25, 0)
+
+    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glShadeModel(GL_SMOOTH)
+    glLightfv(GL_LIGHT0, GL_POSITION, light0_position)
+    #glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse)
+ 
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    #glColorMaterial(GL_FRONT, GL_DIFFUSE)
+    glEnable(GL_COLOR_MATERIAL)    
+    glEnable(GL_NORMALIZE)
+
+#     glEnable(GL_NORMALIZE)        
+            
+#     glEnable(GL_CULL_FACE)
+#     glEnable(GL_LIGHTING)
+#     glEnable(GL_LIGHT0)
+#     glEnable(GL_DEPTH_TEST)            
+
+
+
+    
+    
+print "done"
+
+# print(t)
+# test=surface_sketcher(t)
+# print(test)
+
+
+# cube_list.pop()
+# cube_list.pop()
+
+
+
+glutInit()
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
+glutInitWindowSize(600, 600)
+glutInitWindowPosition(400, 70)
+glutCreateWindow("Revolution")
+init()
+glutDisplayFunc(test1)
+glutMotionFunc(MotionMouse)
+glutMouseFunc(Mouse)
+glutKeyboardFunc(keyPressed)
+glutMainLoop()
+
+
+
+
+# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+# #from skimage import measure
+
+# x = []
+# y = []
+# z = []
+# for c in edited_cube_list:
+#     q,w,e = surface_sketcher(c.number)
+#     y.extend(w)
+
+# y = np.array(y)
+# y = y *10
+# #mesh = Poly3DCollection(y)
+
+
+
+# fig = plt.figure(figsize=(10, 10))
+# ax = fig.add_subplot(111, projection='3d')
+
+# #Fancy indexing: `verts[faces]` to generate a collection of triangles
+# mesh = Poly3DCollection(y)
+# mesh.set_edgecolor('k')
+# ax.add_collection3d(mesh)
+
+# ax.set_xlabel("x-axis: a = 6 per ellipsoid")
+# ax.set_ylabel("y-axis: b = 10")
+# ax.set_zlabel("z-axis: c = 16")
+
+# ax.set_xlim(0, 200)  # a = 6 (times two for 2nd ellipsoid)
+# ax.set_ylim(0, 200)  # b = 10
+# ax.set_zlim(0, 200)  # c = 16
+
+# plt.tight_layout()
+# plt.show()
+
